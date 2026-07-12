@@ -6,9 +6,12 @@ public class EnemyMovement : MonoBehaviour
     public float moveSpeed = 3f;
 
     [Header("Comportamento do Atirador")]
-    [Tooltip("Se marcado, o inimigo lerá o alcance da torre e vai parar exatamente na borda dele.")]
     public bool pararNoLimiteDaTorre = false;
-    public float distanciaDeParadaPadrao = 0f; // Usado para os inimigos normais
+    public float distanciaDeParadaPadrao = 0f;
+
+    [Header("Visual")]
+    [Tooltip("Coloque -90 ou 90 se o sprite estiver andando de lado.")]
+    public float compensacaoDeRotacao = -90f; // -90 resolve 99% dos casos de sprites virados para cima
 
     private Transform tower;
     private TowerController scriptDaTorre;
@@ -22,7 +25,7 @@ public class EnemyMovement : MonoBehaviour
         if (towerObject != null)
         {
             tower = towerObject.transform;
-            scriptDaTorre = towerObject.GetComponent<TowerController>(); // Pega a "mente" da torre
+            scriptDaTorre = towerObject.GetComponent<TowerController>();
         }
     }
 
@@ -30,22 +33,22 @@ public class EnemyMovement : MonoBehaviour
     {
         if (tower != null && scriptDaTorre != null)
         {
+            // Calcula a direção e a distância
+            Vector2 direcao = (tower.position - transform.position).normalized;
             float distancia = Vector2.Distance(transform.position, tower.position);
 
-            // ATENÇÃO: Troque 'alcanceDeVisao' abaixo pelo nome exato da variável 
-            // que você usa no seu TowerController para definir a área que a torre detecta inimigos!
-            // Subtraímos 0.2f para que ele invada um pouquinho a zona de perigo antes de parar
+            // Faz o inimigo olhar para a torre constantemente
+            float angulo = Mathf.Atan2(direcao.y, direcao.x) * Mathf.Rad2Deg;
+            rb.rotation = angulo + compensacaoDeRotacao; // Aplica a correção da arte aqui!
+
             float limiteAtual = pararNoLimiteDaTorre ? (scriptDaTorre.attackRange - 0.2f) : distanciaDeParadaPadrao;
 
-            // Se o inimigo ainda estiver fora do alcance da torre, continua andando
             if (distancia > limiteAtual)
             {
-                Vector2 direcao = (tower.position - transform.position).normalized;
                 rb.linearVelocity = direcao * moveSpeed;
             }
             else
             {
-                // Entrou no raio da torre: puxa o freio instantaneamente
                 rb.linearVelocity = Vector2.zero;
             }
         }
