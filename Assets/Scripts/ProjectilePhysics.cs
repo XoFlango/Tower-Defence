@@ -35,9 +35,15 @@ public class ProjectilePhysics : MonoBehaviour
     {
         if (hitInfo.CompareTag("Inimigo"))
         {
-            // Se o inimigo não tiver vida, ele é destruído imediatamente
-            // (Vamos adicionar vida aos inimigos no próximo passo!)
-            Destroy(hitInfo.gameObject);
+            // Tenta pegar o script "Enemy" do quadrado que o tiro acertou
+            Enemy inimigoAtingido = hitInfo.GetComponent<Enemy>();
+
+            if (inimigoAtingido != null)
+            {
+                inimigoAtingido.ReceberDano(1); // Causa 1 de dano
+            }
+
+            // O tiro se destrói ao bater, independente se o inimigo morreu ou não
             Destroy(gameObject);
         }
     }
