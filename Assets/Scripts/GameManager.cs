@@ -1,27 +1,31 @@
 using UnityEngine;
-using TMPro; // Biblioteca necessária para mexer com textos na interface
+using TMPro;
+using UnityEngine.SceneManagement; // Adicione esta linha no topo!
 
 public class GameManager : MonoBehaviour
 {
-    // O Singleton: Permite que outros scripts acessem este via "GameManager.instance"
     public static GameManager instance;
 
     [Header("Economia")]
     public int moedas = 0;
-    public TextMeshProUGUI textoMoedas; // Referência ao texto na tela
+    public TextMeshProUGUI textoMoedas;
+
+    [Header("Telas")]
+    public GameObject painelGameOver; // Referência para a tela de fim de jogo
 
     void Awake()
     {
-        // Garante que só exista um GameManager na cena
-        if (instance == null)
-            instance = this;
-        else
-            Destroy(gameObject);
+        if (instance == null) instance = this;
+        else Destroy(gameObject);
     }
 
     void Start()
     {
-        AtualizarInterface(); // Garante que o texto comece mostrando "0"
+        // Garante que o jogo comece rodando normalmente e esconde o Game Over
+        Time.timeScale = 1f;
+        if (painelGameOver != null) painelGameOver.SetActive(false);
+
+        AtualizarInterface();
     }
 
     public void AdicionarMoedas(int valor)
@@ -47,5 +51,26 @@ public class GameManager : MonoBehaviour
             return true;
         }
         return false; // Não tem moedas suficientes
+    }
+
+    public void AtivarGameOver()
+    {
+        // Congela o tempo do jogo (inimigos e tiros param na hora)
+        Time.timeScale = 0f;
+
+        // Mostra a tela de Game Over
+        if (painelGameOver != null)
+        {
+            painelGameOver.SetActive(true);
+        }
+    }
+
+    public void ReiniciarPartida()
+    {
+        // Restaura o tempo ao normal
+        Time.timeScale = 1f;
+
+        // Recarrega a cena atual do zero
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

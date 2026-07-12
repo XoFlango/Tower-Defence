@@ -35,8 +35,17 @@ public class ShopManager : MonoBehaviour
     {
         if (GameManager.instance.GastarMoedas(custoVelocidade))
         {
-            torre.fireRate += 0.5f; // Atira meia vez a mais por segundo
-            custoVelocidade += 5;          // Aumenta o preço
+            // Diminui o tempo entre os tiros (ex: tira 0.05 segundos de espera)
+            torre.fireRate -= 0.05f;
+
+            // Trava de segurança importantíssima: o tempo nunca pode ser zero ou negativo,
+            // senão a Unity tenta atirar infinitas vezes no mesmo frame e o jogo trava.
+            if (torre.fireRate < 0.1f)
+            {
+                torre.fireRate = 0.1f; // Limite máximo de velocidade (metralhadora)
+            }
+
+            custoVelocidade += 5;
             AtualizarTextosLoja();
         }
     }

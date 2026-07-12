@@ -2,15 +2,17 @@ using UnityEngine;
 
 public class EnemyMovement : MonoBehaviour
 {
-    [Header("Configurações do Inimigo")]
+    [Header("Configuraï¿½ï¿½es do Inimigo")]
     public float moveSpeed = 3f;
 
     private Transform tower;
+    private Rigidbody2D rb;
 
     void Start()
     {
-        // Procura a torre pelo nome exato que está na hierarquia da Unity.
-        // Se o seu objeto da torre tiver outro nome, mude "Torre" aqui abaixo!
+        // Pega o componente de fï¿½sica do prï¿½prio inimigo
+        rb = GetComponent<Rigidbody2D>();
+
         GameObject towerObject = GameObject.Find("Torre");
 
         if (towerObject != null)
@@ -19,13 +21,16 @@ public class EnemyMovement : MonoBehaviour
         }
     }
 
-    void Update()
+    // FixedUpdate roda em sincronia perfeita com a engine de fï¿½sica
+    void FixedUpdate()
     {
         if (tower != null)
         {
-            // MoveTowards puxa o inimigo exatamente para a posição do alvo, 
-            // ignorando para qual lado o "transform.right" está apontando.
-            transform.position = Vector2.MoveTowards(transform.position, tower.position, moveSpeed * Time.deltaTime);
+            // Calcula uma "seta" (vetor) apontando do inimigo para a torre
+            Vector2 direcao = (tower.position - transform.position).normalized;
+
+            // Empurra o inimigo nessa direï¿½ï¿½o usando a velocidade da fï¿½sica
+            rb.linearVelocity = direcao * moveSpeed;
         }
     }
 }
