@@ -36,13 +36,15 @@ public class Enemy : MonoBehaviour
 
     void Morrer()
     {
-        // Avisa o GameManager para adicionar os pontos
         if (GameManager.instance != null)
         {
+            // Adiciona as moedas
             GameManager.instance.AdicionarMoedas(valorEmMoedas);
+
+            // Registra a morte para o contador de onda
+            GameManager.instance.RegistrarMorteInimigo();
         }
 
-        // Destrói o quadrado
         Destroy(gameObject);
     }
 }

@@ -1,6 +1,6 @@
 using UnityEngine;
 using TMPro;
-using UnityEngine.SceneManagement; // Adicione esta linha no topo!
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -10,8 +10,17 @@ public class GameManager : MonoBehaviour
     public int moedas = 0;
     public TextMeshProUGUI textoMoedas;
 
+    [Header("Upgrades Especiais")]
+    public float multiplicadorDeMoedas = 1.0f;
+
+    [Header("Sistema de Ondas")]
+    public int ondaAtual = 1;
+    public int inimigosMortosNaOnda = 0;
+    public int metaDeInimigos = 10; // Quantos inimigos precisam morrer para a onda 2
+    public TextMeshProUGUI textoOnda; // Referência para o texto na tela
+
     [Header("Telas")]
-    public GameObject painelGameOver; // Referência para a tela de fim de jogo
+    public GameObject painelGameOver;
 
     void Awake()
     {
@@ -21,25 +30,20 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        // Garante que o jogo comece rodando normalmente e esconde o Game Over
         Time.timeScale = 1f;
         if (painelGameOver != null) painelGameOver.SetActive(false);
 
         AtualizarInterface();
     }
 
-    public void AdicionarMoedas(int valor)
+    // --- ECONOMIA ---
+    public void AdicionarMoedas(int valorBase)
     {
-        moedas += valor;
-        AtualizarInterface();
-    }
+        // Aplica o multiplicador (ex: ganhar 1 * 1.5 = 1.5) e arredonda.
+        int valorFinal = Mathf.RoundToInt(valorBase * multiplicadorDeMoedas);
 
-    void AtualizarInterface()
-    {
-        if (textoMoedas != null)
-        {
-            textoMoedas.text = "Moedas: " + moedas;
-        }
+        moedas += valorFinal;
+        AtualizarInterface();
     }
 
     public bool GastarMoedas(int valor)
@@ -50,7 +54,36 @@ public class GameManager : MonoBehaviour
             AtualizarInterface();
             return true;
         }
-        return false; // Não tem moedas suficientes
+        return false;
+    }
+
+    // --- SISTEMA DE ONDAS ---
+    public void RegistrarMorteInimigo()
+    {
+        inimigosMortosNaOnda++;
+
+        // Verifica se atingiu a meta para passar de onda
+        if (inimigosMortosNaOnda >= metaDeInimigos)
+        {
+            AvancarOnda();
+        }
+    }
+
+    void AvancarOnda()
+    {
+        ondaAtual++;
+        inimigosMortosNaOnda = 0;
+        metaDeInimigos += 5; // A próxima onda exigirá 5 mortes a mais (15, 20, 25...)
+
+        AtualizarInterface();
+    }
+
+    // --- INTERFACE ---
+    void AtualizarInterface()
+    {
+        if (textoMoedas != null) textoMoedas.text = "Moedas: " + moedas;
+
+        if (textoOnda != null) textoOnda.text = "Onda: " + ondaAtual;
     }
 
     public void AtivarGameOver()

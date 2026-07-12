@@ -4,8 +4,12 @@ using TMPro;
 public class TowerHealth : MonoBehaviour
 {
     [Header("Atributos de Vida")]
-    public float vidaMaxima = 100f;
+    // Agora a vida base é 10!
+    public float vidaMaxima = 10f;
     private float vidaAtual;
+
+    [Header("Regeneração")]
+    public float regeneracaoPorSegundo = 0f; // Começa em 0. A loja vai aumentar isso.
 
     [Header("Interface")]
     public TextMeshProUGUI textoVida;
@@ -16,7 +20,24 @@ public class TowerHealth : MonoBehaviour
         AtualizarTextoDeVida();
     }
 
-    // Função que será chamada pelos inimigos
+    void Update()
+    {
+        // Se a torre estiver ferida e tiver o upgrade de regeneração
+        if (vidaAtual < vidaMaxima && regeneracaoPorSegundo > 0f)
+        {
+            // Cura a torre gradualmente baseada no tempo do jogo
+            vidaAtual += regeneracaoPorSegundo * Time.deltaTime;
+
+            // Trava para não curar além do máximo
+            if (vidaAtual > vidaMaxima)
+            {
+                vidaAtual = vidaMaxima;
+            }
+
+            AtualizarTextoDeVida();
+        }
+    }
+
     public void ReceberDano(float quantidade)
     {
         vidaAtual -= quantidade;
@@ -29,18 +50,30 @@ public class TowerHealth : MonoBehaviour
         }
     }
 
+    // --- NOVA FUNÇÃO PARA A LOJA ---
+    public void AumentarRegeneracao(float quantidade)
+    {
+        regeneracaoPorSegundo += quantidade;
+    }
+
+    public void AumentarVidaMaxima(float quantidade)
+    {
+        vidaMaxima += quantidade;
+        vidaAtual += quantidade;
+        AtualizarTextoDeVida();
+    }
+
     void AtualizarTextoDeVida()
     {
         if (textoVida != null)
         {
-            // Mathf.RoundToInt arredonda o valor para não mostrar números quebrados na tela
-            textoVida.text = "HP: " + Mathf.RoundToInt(vidaAtual).ToString();
+            int vidaParaMostrar = Mathf.CeilToInt(vidaAtual);
+            textoVida.text = "HP: " + vidaParaMostrar.ToString();
         }
     }
 
     void DestruirTorre()
     {
-        // Chama a função de Game Over que vamos criar no GameManager
         if (GameManager.instance != null)
         {
             GameManager.instance.AtivarGameOver();
