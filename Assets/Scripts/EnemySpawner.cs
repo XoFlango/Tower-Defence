@@ -1,57 +1,112 @@
 using UnityEngine;
 
+// System.Serializable faz com que essa classe customizada apareça no Inspector da Unity
+[System.Serializable]
+public class InimigoSorteio
+{
+    public GameObject prefab;
+    [Tooltip("Quanto maior o número, maior a chance deste inimigo nascer.")]
+    public float pesoDeSpawn = 100f;
+}
+
 public class EnemySpawner : MonoBehaviour
 {
-    [Header("Referências")]
-    public GameObject enemyPrefab;
-    public Transform tower; // Arraste a sua Torre para cá no Inspector
-
     [Header("Configurações de Spawn")]
-    public float spawnRadius = 8f;  // Distância que os inimigos vão nascer
-    public float spawnRate = 2f;    // Tempo em segundos entre cada inimigo
+    // Substituímos o array de GameObjects pelo array da nossa nova classe
+    public InimigoSorteio[] listaDeInimigos;
+    public float spawnRadius = 8f;
 
-    private float nextSpawnTime = 0f;
+    [Header("Dificuldade Inicial (Lento)")]
+    public float minSpawnInicial = 1.0f;
+    public float maxSpawnInicial = 3.0f;
+
+    [Header("Dificuldade Máxima (Caos)")]
+    public float minSpawnFinal = 0.2f;
+    public float maxSpawnFinal = 0.8f;
+
+    [Header("Escalonamento")]
+    public float tempoParaDificuldadeMaxima = 120f;
+
+    private float timer;
+    private float tempoDeJogo;
+    private float currentSpawnInterval;
+
+    void Start()
+    {
+        SortearNovoIntervalo();
+    }
 
     void Update()
     {
-        // Controla o tempo para instanciar o próximo inimigo
-        if (Time.time >= nextSpawnTime)
+        tempoDeJogo += Time.deltaTime;
+        timer += Time.deltaTime;
+
+        if (timer >= currentSpawnInterval)
         {
             SpawnEnemy();
-            nextSpawnTime = Time.time + spawnRate;
+            timer = 0f;
+            SortearNovoIntervalo();
         }
+    }
+
+    void SortearNovoIntervalo()
+    {
+        float progressoDaDificuldade = Mathf.Clamp01(tempoDeJogo / tempoParaDificuldadeMaxima);
+        float minAtual = Mathf.Lerp(minSpawnInicial, minSpawnFinal, progressoDaDificuldade);
+        float maxAtual = Mathf.Lerp(maxSpawnInicial, maxSpawnFinal, progressoDaDificuldade);
+        currentSpawnInterval = Random.Range(minAtual, maxAtual);
     }
 
     void SpawnEnemy()
     {
-        // 1. Sorteia um ângulo aleatório em radianos (0 a 360 graus)
-        float randomAngle = Random.Range(0f, Mathf.PI * 2f);
+        if (listaDeInimigos.Length == 0) return;
 
-        // 2. Calcula a posição exata na borda do círculo usando Seno e Cosseno
-        Vector2 spawnDirection = new Vector2(Mathf.Cos(randomAngle), Mathf.Sin(randomAngle));
-        Vector2 spawnPosition = (Vector2)tower.position + (spawnDirection * spawnRadius);
+        // --- LÓGICA DE POSIÇÃO E ROTAÇÃO ---
+        float randomAngle = Random.Range(0f, 360f);
+        float angleRad = randomAngle * Mathf.Deg2Rad;
+        Vector2 spawnDirection = new Vector2(Mathf.Cos(angleRad), Mathf.Sin(angleRad));
 
-        // 3. Calcula a direção em que o inimigo deve olhar (para o centro)
-        Vector2 directionToTower = ((Vector2)tower.position - spawnPosition).normalized;
-
-        // Atan2 descobre o ângulo em radianos entre dois pontos, Rad2Deg converte para graus
-        float angleToTower = Mathf.Atan2(directionToTower.y, directionToTower.x) * Mathf.Rad2Deg;
-
-        // Cria a rotação final no eixo Z (padrão do 2D)
-        // NOTA: Se o "rosto" do seu quadrado estiver virado para CIMA na arte original, mude para: angleToTower - 90f
+        Vector2 spawnPos = (Vector2)transform.position + (spawnDirection * spawnRadius);
+        float angleToTower = Mathf.Atan2(-spawnDirection.y, -spawnDirection.x) * Mathf.Rad2Deg;
         Quaternion spawnRotation = Quaternion.Euler(0, 0, angleToTower);
 
-        // 4. Instancia o inimigo na posição e rotação corretas
-        Instantiate(enemyPrefab, spawnPosition, spawnRotation);
+        // --- NOVA LÓGICA DE SORTEIO POR PESO ---
+        // 1. Calcula a soma de todos os pesos
+        float pesoTotal = 0f;
+        foreach (InimigoSorteio inimigo in listaDeInimigos)
+        {
+            pesoTotal += inimigo.pesoDeSpawn;
+        }
+
+        // 2. Sorteia um valor entre 0 e o peso total
+        float valorSorteado = Random.Range(0f, pesoTotal);
+        GameObject prefabEscolhido = null;
+
+        // 3. Subtrai os pesos até encontrar o inimigo sorteado
+        foreach (InimigoSorteio inimigo in listaDeInimigos)
+        {
+            valorSorteado -= inimigo.pesoDeSpawn;
+
+            if (valorSorteado <= 0f)
+            {
+                prefabEscolhido = inimigo.prefab;
+                break;
+            }
+        }
+
+        // Trava de segurança caso o float falhe por precisão
+        if (prefabEscolhido == null)
+        {
+            prefabEscolhido = listaDeInimigos[0].prefab;
+        }
+
+        // 4. Instancia o inimigo escolhido
+        Instantiate(prefabEscolhido, spawnPos, spawnRotation);
     }
 
-    // Pro-tip: Isso desenha o raio de spawn de vermelho no Editor para você visualizar!
     private void OnDrawGizmosSelected()
     {
-        if (tower != null)
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(tower.position, spawnRadius);
-        }
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, spawnRadius);
     }
 }

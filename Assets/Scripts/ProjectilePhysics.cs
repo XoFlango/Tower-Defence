@@ -7,6 +7,8 @@ public class ProjectilePhysics : MonoBehaviour
     public float launchForce = 15f; // Valor padrão robusto
 
     [Header("Configurações de Dano")]
+
+    [HideInInspector] public int dano = 1;
     public float lifeTime = 3f;
 
     private Rigidbody2D rb;
@@ -33,6 +35,7 @@ public class ProjectilePhysics : MonoBehaviour
     // A lógica de dano permanece a mesma
     void OnTriggerEnter2D(Collider2D hitInfo)
     {
+
         if (hitInfo.CompareTag("Inimigo"))
         {
             // Tenta pegar o script "Enemy" do quadrado que o tiro acertou
@@ -40,11 +43,13 @@ public class ProjectilePhysics : MonoBehaviour
 
             if (inimigoAtingido != null)
             {
-                inimigoAtingido.ReceberDano(1); // Causa 1 de dano
+                inimigoAtingido.ReceberDano(dano); // Agora usa a variável em vez do número 1
             }
+
 
             // O tiro se destrói ao bater, independente se o inimigo morreu ou não
             Destroy(gameObject);
         }
+
     }
 }

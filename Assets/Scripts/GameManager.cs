@@ -37,4 +37,15 @@ public class GameManager : MonoBehaviour
             textoMoedas.text = "Moedas: " + moedas;
         }
     }
+
+    public bool GastarMoedas(int valor)
+    {
+        if (moedas >= valor)
+        {
+            moedas -= valor;
+            AtualizarInterface();
+            return true;
+        }
+        return false; // Não tem moedas suficientes
+    }
 }

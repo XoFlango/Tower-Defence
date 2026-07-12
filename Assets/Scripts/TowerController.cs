@@ -7,6 +7,9 @@ public class TowerController : MonoBehaviour
     public float fireRadius = 1f; // Substituímos o Transform pelo Raio
     public float fireRate = 0.5f;
 
+    [Header("Atributos da Torre")]
+    public int danoAtual = 1; // Nova variável
+
     [Header("Configurações de Alcance")]
     public float attackRange = 5f;
     public LayerMask enemyLayer;
@@ -60,11 +63,13 @@ public class TowerController : MonoBehaviour
 
     void Shoot()
     {
-        // Calcula a posição do tiro: Posição do centro + (Direção que a torre olha * Raio do tiro)
-        // transform.right representa a "frente" da torre em 2D após ela rotacionar
         Vector3 spawnPosition = transform.position + (transform.right * fireRadius);
 
-        Instantiate(projectilePrefab, spawnPosition, transform.rotation);
+        // Armazena o tiro criado em uma variável temporária
+        GameObject projetilCriado = Instantiate(projectilePrefab, spawnPosition, transform.rotation);
+
+        // Acessa o script do tiro e injeta o dano da torre nele
+        projetilCriado.GetComponent<ProjectilePhysics>().dano = danoAtual;
     }
 
     void OnDrawGizmosSelected()
