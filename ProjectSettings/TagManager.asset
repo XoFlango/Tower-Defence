@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Torre
   - Inimigo
+  - Projectile
+  - Bg
   layers:
   - Default
   - TransparentFX
