@@ -83,7 +83,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0.8553459, g: 0.46456835, b: 0.11028039, a: 1}
@@ -122,6 +122,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   vida: 2
   valorEmMoedas: 2
+  danoPorSegundo: 10
 --- !u!61 &-870348308285478107
 BoxCollider2D:
   m_ObjectHideFlags: 0
