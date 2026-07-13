@@ -1,67 +1,101 @@
 using UnityEngine;
 
-// System.Serializable faz com que essa classe customizada apareça no Inspector da Unity
 [System.Serializable]
 public class InimigoSorteio
 {
     public GameObject prefab;
-    [Tooltip("Quanto maior o número, maior a chance deste inimigo nascer.")]
     public float pesoDeSpawn = 100f;
 }
 
 public class EnemySpawner : MonoBehaviour
 {
-    [Header("Configurações de Spawn")]
-    // Substituímos o array de GameObjects pelo array da nossa nova classe
-    public InimigoSorteio[] listaDeInimigos;
+    [Header("Configurações Gerais")]
     public float spawnRadius = 8f;
+    [Tooltip("Em qual onda o jogo atinge o limite do enxame?")]
+    public int ondaParaDificuldadeMaxima = 15;
 
-    [Header("Dificuldade Inicial (Lento)")]
-    public float minSpawnInicial = 1.0f;
-    public float maxSpawnInicial = 3.0f;
+    [Header("Enxame (Inimigo Básico)")]
+    public GameObject prefabInimigoBasico;
+    public float tempoSpawnBasicoInicial = 1.0f;
+    public float tempoSpawnBasicoFinal = 0.1f;
+    public int loteBasicoInicial = 1;
+    public int loteBasicoFinal = 4;
 
-    [Header("Dificuldade Máxima (Caos)")]
-    public float minSpawnFinal = 0.2f;
-    public float maxSpawnFinal = 0.8f;
+    [Header("Inimigos Especiais (Sorteio)")]
+    [Tooltip("A partir de qual onda os inimigos especiais começam a aparecer?")]
+    public int ondaParaLiberarEspeciais = 5; // NOVO: A trava das ondas!
+    public InimigoSorteio[] listaDeEspeciais;
+    public float tempoSpawnEspecialInicial = 4.0f;
+    public float tempoSpawnEspecialFinal = 1.5f;
 
-    [Header("Escalonamento")]
-    public float tempoParaDificuldadeMaxima = 120f;
+    // Variáveis internas
+    private float timerBasico;
+    private float timerEspecial;
 
-    private float timer;
-    private float tempoDeJogo;
-    private float currentSpawnInterval;
+    private float currentIntervaloBasico;
+    private int currentLoteBasico;
+    private float currentIntervaloEspecial;
 
     void Start()
     {
-        SortearNovoIntervalo();
+        AtualizarDificuldadeDaOnda();
     }
 
     void Update()
     {
-        tempoDeJogo += Time.deltaTime;
-        timer += Time.deltaTime;
+        if (GameManager.instance.emIntervalo) return;
+        if (GameManager.instance.inimigosSpawnadosNestaOnda >= GameManager.instance.inimigosNestaOnda) return;
 
-        if (timer >= currentSpawnInterval)
+        // 1. GERAÇÃO DO ENXAME (Sempre o Inimigo Básico)
+        timerBasico += Time.deltaTime;
+        if (timerBasico >= currentIntervaloBasico)
         {
-            SpawnEnemy();
-            timer = 0f;
-            SortearNovoIntervalo();
+            int faltam = GameManager.instance.inimigosNestaOnda - GameManager.instance.inimigosSpawnadosNestaOnda;
+            int quantidadeParaSpawnar = Mathf.Min(currentLoteBasico, faltam);
+
+            for (int i = 0; i < quantidadeParaSpawnar; i++)
+            {
+                Spawnar(prefabInimigoBasico);
+                GameManager.instance.inimigosSpawnadosNestaOnda++;
+            }
+
+            AtualizarDificuldadeDaOnda();
+            timerBasico = 0f;
+        }
+
+        // 2. GERAÇÃO DE ESPECIAIS (Sorteio de Tanque, Atirador, etc)
+        // NOVA LÓGICA: Verifica se a onda atual já atingiu a onda de liberação
+        bool podeSpawnarEspeciais = GameManager.instance.ondaAtual >= ondaParaLiberarEspeciais;
+
+        if (podeSpawnarEspeciais && listaDeEspeciais.Length > 0 && GameManager.instance.inimigosSpawnadosNestaOnda < GameManager.instance.inimigosNestaOnda)
+        {
+            timerEspecial += Time.deltaTime;
+            if (timerEspecial >= currentIntervaloEspecial)
+            {
+                SpawnarEspecial();
+                GameManager.instance.inimigosSpawnadosNestaOnda++;
+                timerEspecial = 0f;
+            }
         }
     }
 
-    void SortearNovoIntervalo()
+    void AtualizarDificuldadeDaOnda()
     {
-        float progressoDaDificuldade = Mathf.Clamp01(tempoDeJogo / tempoParaDificuldadeMaxima);
-        float minAtual = Mathf.Lerp(minSpawnInicial, minSpawnFinal, progressoDaDificuldade);
-        float maxAtual = Mathf.Lerp(maxSpawnInicial, maxSpawnFinal, progressoDaDificuldade);
-        currentSpawnInterval = Random.Range(minAtual, maxAtual);
+        float progresso = 0f;
+
+        if (GameManager.instance != null)
+        {
+            progresso = (float)(GameManager.instance.ondaAtual - 1) / (ondaParaDificuldadeMaxima - 1);
+            progresso = Mathf.Clamp01(progresso);
+        }
+
+        currentIntervaloBasico = Mathf.Lerp(tempoSpawnBasicoInicial, tempoSpawnBasicoFinal, progresso);
+        currentLoteBasico = Mathf.RoundToInt(Mathf.Lerp(loteBasicoInicial, loteBasicoFinal, progresso));
+        currentIntervaloEspecial = Mathf.Lerp(tempoSpawnEspecialInicial, tempoSpawnEspecialFinal, progresso);
     }
 
-    void SpawnEnemy()
+    void Spawnar(GameObject prefab)
     {
-        if (listaDeInimigos.Length == 0) return;
-
-        // --- LÓGICA DE POSIÇÃO E ROTAÇÃO ---
         float randomAngle = Random.Range(0f, 360f);
         float angleRad = randomAngle * Mathf.Deg2Rad;
         Vector2 spawnDirection = new Vector2(Mathf.Cos(angleRad), Mathf.Sin(angleRad));
@@ -70,23 +104,20 @@ public class EnemySpawner : MonoBehaviour
         float angleToTower = Mathf.Atan2(-spawnDirection.y, -spawnDirection.x) * Mathf.Rad2Deg;
         Quaternion spawnRotation = Quaternion.Euler(0, 0, angleToTower);
 
-        // --- NOVA LÓGICA DE SORTEIO POR PESO ---
-        // 1. Calcula a soma de todos os pesos
+        Instantiate(prefab, spawnPos, spawnRotation);
+    }
+
+    void SpawnarEspecial()
+    {
         float pesoTotal = 0f;
-        foreach (InimigoSorteio inimigo in listaDeInimigos)
-        {
-            pesoTotal += inimigo.pesoDeSpawn;
-        }
+        foreach (InimigoSorteio inimigo in listaDeEspeciais) pesoTotal += inimigo.pesoDeSpawn;
 
-        // 2. Sorteia um valor entre 0 e o peso total
         float valorSorteado = Random.Range(0f, pesoTotal);
-        GameObject prefabEscolhido = null;
+        GameObject prefabEscolhido = listaDeEspeciais[0].prefab;
 
-        // 3. Subtrai os pesos até encontrar o inimigo sorteado
-        foreach (InimigoSorteio inimigo in listaDeInimigos)
+        foreach (InimigoSorteio inimigo in listaDeEspeciais)
         {
             valorSorteado -= inimigo.pesoDeSpawn;
-
             if (valorSorteado <= 0f)
             {
                 prefabEscolhido = inimigo.prefab;
@@ -94,14 +125,7 @@ public class EnemySpawner : MonoBehaviour
             }
         }
 
-        // Trava de segurança caso o float falhe por precisão
-        if (prefabEscolhido == null)
-        {
-            prefabEscolhido = listaDeInimigos[0].prefab;
-        }
-
-        // 4. Instancia o inimigo escolhido
-        Instantiate(prefabEscolhido, spawnPos, spawnRotation);
+        Spawnar(prefabEscolhido);
     }
 
     private void OnDrawGizmosSelected()
