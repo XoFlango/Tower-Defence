@@ -81,7 +81,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 984296591
+  m_SortingLayerID: 1963195821
   m_SortingLayer: 2
   m_SortingOrder: 1
   m_MaskInteraction: 0
@@ -171,7 +171,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyProjectile
   velocidade: 5
-  dano: 1
+  dano: 2
   tempoDeVida: 4
 --- !u!58 &8795564614066104922
 CircleCollider2D:

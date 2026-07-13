@@ -13,6 +13,7 @@ public class ShopManager : MonoBehaviour
     public int custoCura = 10;
     public int custoVidaMaxima = 15;
     public int custoMultiplicador = 25; // NOVO CUSTO (um pouco mais caro por ser muito forte)
+    public int custoExplosao = 30;
 
     [Header("Matemática da Loja")]
     public float multiplicadorDeCusto = 1.25f;
@@ -23,6 +24,7 @@ public class ShopManager : MonoBehaviour
     public TextMeshProUGUI textoBotaoCura;
     public TextMeshProUGUI textoBotaoVidaMaxima;
     public TextMeshProUGUI textoBotaoMultiplicador; // NOVO TEXTO
+    public TextMeshProUGUI textoBotaoExplosao;
 
     void Start()
     {
@@ -67,6 +69,18 @@ public class ShopManager : MonoBehaviour
         }
     }
 
+    public void ComprarUpgradeExplosao()
+    {
+        if (GameManager.instance.GastarMoedas(custoExplosao))
+        {
+            // Aumenta o raio da explosão em 0.5 unidades da Unity por compra
+            torre.raioDeExplosaoAtual += 0.5f;
+
+            custoExplosao = Mathf.RoundToInt(custoExplosao * multiplicadorDeCusto);
+            AtualizarTextosLoja();
+        }
+    }
+
     public void ComprarMultiplicadorDeMoedas()
     {
         if (GameManager.instance.GastarMoedas(custoMultiplicador))
@@ -96,6 +110,9 @@ public class ShopManager : MonoBehaviour
         // Atualiza o novo texto do multiplicador
         if (textoBotaoMultiplicador != null)
             textoBotaoMultiplicador.text = "+ Ouro\n$" + custoMultiplicador;
+
+        if(textoBotaoExplosao != null)
+            textoBotaoExplosao.text = "Bala Explosiva\n$" + custoExplosao;
     }
 public void ComprarUpgradeVelocidade()
     {

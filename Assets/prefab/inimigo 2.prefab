@@ -81,7 +81,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 984296591
+  m_SortingLayerID: 1963195821
   m_SortingLayer: 2
   m_SortingOrder: 1
   m_MaskInteraction: 0
@@ -107,9 +107,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6b4eff7075e1f94dae9a8f3671b2443, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyMovement
-  moveSpeed: 2.5
+  moveSpeed: 1.5
   pararNoLimiteDaTorre: 0
   distanciaDeParadaPadrao: 0
+  compensacaoDeRotacao: -90
 --- !u!114 &5012369033586701767
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -124,7 +125,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   vida: 2
   valorEmMoedas: 2
-  danoPorSegundo: 10
+  danoPorSegundo: 5
 --- !u!61 &-870348308285478107
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -163,7 +164,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.4, y: 0.7}
+    oldSize: {x: 1.25, y: 2.1875}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0

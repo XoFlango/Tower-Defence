@@ -4,11 +4,12 @@ public class TowerController : MonoBehaviour
 {
     [Header("Configurações de Disparo")]
     public GameObject projectilePrefab;
-    public float fireRadius = 1f; // Substituímos o Transform pelo Raio
+    public float fireRadius = 1f;
     public float fireRate = 0.5f;
 
     [Header("Atributos da Torre")]
-    public int danoAtual = 1; // Nova variável
+    public int danoAtual = 1;
+    public float raioDeExplosaoAtual = 0f; // NOVO: Controla a área de explosão dos tiros
 
     [Header("Configurações de Alcance")]
     public float attackRange = 5f;
@@ -68,8 +69,14 @@ public class TowerController : MonoBehaviour
         // Armazena o tiro criado em uma variável temporária
         GameObject projetilCriado = Instantiate(projectilePrefab, spawnPosition, transform.rotation);
 
-        // Acessa o script do tiro e injeta o dano da torre nele
-        projetilCriado.GetComponent<ProjectilePhysics>().dano = danoAtual;
+        // Acessa o script de física da bala
+        ProjectilePhysics scriptBala = projetilCriado.GetComponent<ProjectilePhysics>();
+
+        if (scriptBala != null)
+        {
+            // Injeta o dano e o raio de explosão atuais da torre no tiro
+            scriptBala.Configurar(danoAtual, raioDeExplosaoAtual);
+        }
     }
 
     void OnDrawGizmosSelected()
