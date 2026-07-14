@@ -1630,7 +1630,7 @@ MonoBehaviour:
   textoMoedas: {fileID: 1295594088}
   ondaAtual: 1
   inimigosNestaOnda: 15
-  multiplicadorDeInimigos: 1.25
+  multiplicadorDeInimigos: 1.05
   inimigosSpawnadosNestaOnda: 0
   inimigosMortosNaOnda: 0
   emIntervalo: 0

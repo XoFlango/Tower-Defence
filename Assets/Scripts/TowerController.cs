@@ -29,7 +29,13 @@ public class TowerController : MonoBehaviour
             if (Time.time >= nextFireTime)
             {
                 Shoot();
-                nextFireTime = Time.time + fireRate;
+
+                // A MÁGICA AQUI:
+                // Mathf.Max compara o seu fireRate com 0.1f. 
+                // Se o seu fireRate ficar negativo ou virar zero, ele ignora e usa o 0.1f como limite de segurança!
+                float limiteDeSeguranca = Mathf.Max(fireRate, 0.1f);
+
+                nextFireTime = Time.time + limiteDeSeguranca;
             }
         }
     }

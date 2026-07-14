@@ -15,11 +15,11 @@ public class GameManager : MonoBehaviour
     [Header("Sistema de Ondas")]
     public int ondaAtual = 1;
     public int inimigosNestaOnda = 15; // Começa em 15
-    public float multiplicadorDeInimigos = 1.25f; // Cresce 25% a cada onda
+    public float multiplicadorDeInimigos = 1.05f; // Cresce 5% a cada onda
 
     // Variáveis de controle invisíveis para o jogador
-    [HideInInspector] public int inimigosSpawnadosNestaOnda = 0;
-    [HideInInspector] public int inimigosMortosNaOnda = 0;
+     public int inimigosSpawnadosNestaOnda = 0;
+     public int inimigosMortosNaOnda = 0;
     [HideInInspector] public bool emIntervalo = false;
 
     public float tempoDeIntervalo = 5f; // Segundos de descanso entre as ondas
@@ -71,7 +71,7 @@ public class GameManager : MonoBehaviour
         inimigosMortosNaOnda++;
 
         // Se o jogador matou TODOS os inimigos da onda atual...
-        if (inimigosMortosNaOnda >= inimigosNestaOnda)
+        if (inimigosMortosNaOnda >= inimigosNestaOnda && !emIntervalo)
         {
             StartCoroutine(RotinaDeIntervalo()); // Inicia o descanso
         }
@@ -105,6 +105,8 @@ public class GameManager : MonoBehaviour
         emIntervalo = false; // Libera o Spawner para trabalhar novamente
         AtualizarInterface();
     }
+
+
 
     // --- INTERFACE & GAME OVER ---
     void AtualizarInterface()

@@ -3,18 +3,28 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     [Header("Status")]
-    public int vida = 1; // Quantos tiros ele aguenta
+    public float vida = 1f; // Quantos tiros ele aguenta
     public int valorEmMoedas = 1; // Quantas moedas ele dá ao morrer
+    private bool jaMorreu = false;
     [Header("Ataque")]
     public float danoPorSegundo = 10f; // Quanto de vida ele tira da torre por segundo encostado
 
-    public void ReceberDano(int dano)
+    public void ReceberDano(float danoRecebido)
     {
-        vida -= dano;
+        // Se ele já estiver morto, ignora qualquer bala nova que bater nele
+        if (jaMorreu) return;
+
+        vida -= danoRecebido;
 
         if (vida <= 0)
         {
-            Morrer();
+            jaMorreu = true; // Tranca o inimigo. Ele não pode mais receber dano.
+
+            GameManager.instance.RegistrarMorteInimigo();
+
+            // Recomendo colocar aqui a sua lógica de dar moedas ao jogador também
+            GameManager.instance.AdicionarMoedas(valorEmMoedas);
+            Destroy(gameObject);
         }
     }
 
@@ -34,17 +44,4 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    void Morrer()
-    {
-        if (GameManager.instance != null)
-        {
-            // Adiciona as moedas
-            GameManager.instance.AdicionarMoedas(valorEmMoedas);
-
-            // Registra a morte para o contador de onda
-            GameManager.instance.RegistrarMorteInimigo();
-        }
-
-        Destroy(gameObject);
-    }
 }
