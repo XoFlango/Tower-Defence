@@ -96,23 +96,23 @@ public class ShopManager : MonoBehaviour
     void AtualizarTextosLoja()
     {
         if (textoBotaoDano != null)
-            textoBotaoDano.text = "Mais Dano\n$" + custoDano;
+            textoBotaoDano.text = "Mais Dano\n$" + GameManager.instance.FormatarMoedas(custoDano);
 
         if (textoBotaoVelocidade != null)
-            textoBotaoVelocidade.text = "Tiro Rápido\n$" + custoVelocidade;
+            textoBotaoVelocidade.text = "Tiro Rápido\n$" + GameManager.instance.FormatarMoedas(custoVelocidade);
 
         if (textoBotaoCura != null)
-            textoBotaoCura.text = "+ Regen Vida\n$" + custoCura;
+            textoBotaoCura.text = "+ Regen Vida\n$" + GameManager.instance.FormatarMoedas(custoCura);
 
         if (textoBotaoVidaMaxima != null)
-            textoBotaoVidaMaxima.text = "+ Vida Max\n$" + custoVidaMaxima;
+            textoBotaoVidaMaxima.text = "+ Vida Max\n$" + GameManager.instance.FormatarMoedas(custoVidaMaxima);
 
         // Atualiza o novo texto do multiplicador
         if (textoBotaoMultiplicador != null)
-            textoBotaoMultiplicador.text = "+ Ouro\n$" + custoMultiplicador;
+            textoBotaoMultiplicador.text = "+ Ouro\n$" + GameManager.instance.FormatarMoedas(custoMultiplicador);
 
         if(textoBotaoExplosao != null)
-            textoBotaoExplosao.text = "Bala Explosiva\n$" + custoExplosao;
+            textoBotaoExplosao.text = "Bala Explosiva\n$" + GameManager.instance.FormatarMoedas(custoExplosao);
     }
 public void ComprarUpgradeVelocidade()
     {

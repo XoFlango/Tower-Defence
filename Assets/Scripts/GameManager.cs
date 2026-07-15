@@ -105,13 +105,27 @@ public class GameManager : MonoBehaviour
         emIntervalo = false; // Libera o Spawner para trabalhar novamente
         AtualizarInterface();
     }
+    public string FormatarMoedas(int valor)
+    {
+        if (valor >= 1000000)
+        {
+            return (valor / 1000000f).ToString("0.##") + "M"; // Já deixamos pronto para os milhões!
+        }
+        else if (valor >= 1000)
+        {
+            return (valor / 1000f).ToString("0.##") + "k";
+        }
 
+        // Se for menor que mil, retorna o número normal
+        return valor.ToString();
+    }
 
 
     // --- INTERFACE & GAME OVER ---
     void AtualizarInterface()
     {
-        if (textoMoedas != null) textoMoedas.text = "Moedas: " + moedas;
+        if (textoMoedas != null) textoMoedas.text = "$: " + FormatarMoedas(moedas);
+
         if (textoOnda != null) textoOnda.text = "Onda: " + ondaAtual;
     }
 
