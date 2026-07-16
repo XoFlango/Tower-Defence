@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 4f77641af7a6a8145810a79131c22deb
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - sliderVolume: {instanceID: 0}
+  - textoStatusMudo: {instanceID: 0}
+  - painelConfig: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
