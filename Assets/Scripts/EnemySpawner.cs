@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 [System.Serializable]
 public class InimigoSorteio
@@ -11,30 +12,33 @@ public class EnemySpawner : MonoBehaviour
 {
     [Header("Configurações Gerais")]
     public float spawnRadius = 8f;
-    [Tooltip("Em qual onda o jogo atinge o limite do enxame?")]
-    public int ondaParaDificuldadeMaxima = 15;
+    public int ondaParaTetoDeVariaveis = 15;
+
+    [Header("Chefe (Boss)")]
+    public GameObject prefabBoss;
+    public int intervaloDeOndasBoss = 10;
+    private bool bossSpawnadoNestaOnda = false; // Controla para não nascer mais de 1 boss na onda
 
     [Header("Enxame (Inimigo Básico)")]
     public GameObject prefabInimigoBasico;
     public float tempoSpawnBasicoInicial = 1.0f;
-    public float tempoSpawnBasicoFinal = 0.1f;
+    public float tempoSpawnBasicoFinal = 0.5f;
     public int loteBasicoInicial = 1;
-    public int loteBasicoFinal = 4;
+    public int loteBasicoFinal = 5;
+    public float atrasoDentroDoLote = 0.2f;
 
-    [Header("Inimigos Especiais (Sorteio)")]
-    [Tooltip("A partir de qual onda os inimigos especiais começam a aparecer?")]
-    public int ondaParaLiberarEspeciais = 5; // NOVO: A trava das ondas!
+    [Header("Inimigos Especiais (Chance no Lote)")]
+    public int ondaParaLiberarEspeciais = 5;
+    [Range(0f, 100f)] public float chanceEspecialInicial = 5f;
+    [Range(0f, 100f)] public float chanceEspecialMaxima = 30f;
     public InimigoSorteio[] listaDeEspeciais;
-    public float tempoSpawnEspecialInicial = 4.0f;
-    public float tempoSpawnEspecialFinal = 1.5f;
 
     // Variáveis internas
     private float timerBasico;
-    private float timerEspecial;
-
     private float currentIntervaloBasico;
     private int currentLoteBasico;
-    private float currentIntervaloEspecial;
+    private float currentChanceEspecial;
+    private bool estaSpawnandoLote = false;
 
     void Start()
     {
@@ -43,55 +47,84 @@ public class EnemySpawner : MonoBehaviour
 
     void Update()
     {
-        if (GameManager.instance.emIntervalo) return;
-        if (GameManager.instance.inimigosSpawnadosNestaOnda >= GameManager.instance.inimigosNestaOnda) return;
-
-        // 1. GERAÇÃO DO ENXAME (Sempre o Inimigo Básico)
-        timerBasico += Time.deltaTime;
-        if (timerBasico >= currentIntervaloBasico)
+        if (GameManager.instance.emIntervalo)
         {
-            int faltam = GameManager.instance.inimigosNestaOnda - GameManager.instance.inimigosSpawnadosNestaOnda;
-            int quantidadeParaSpawnar = Mathf.Min(currentLoteBasico, faltam);
-
-            for (int i = 0; i < quantidadeParaSpawnar; i++)
-            {
-                Spawnar(prefabInimigoBasico);
-                GameManager.instance.inimigosSpawnadosNestaOnda++;
-            }
-
-            AtualizarDificuldadeDaOnda();
-            timerBasico = 0f;
+            bossSpawnadoNestaOnda = false; // Reseta o gatilho para a próxima onda de Boss
+            return;
         }
 
-        // 2. GERAÇÃO DE ESPECIAIS (Sorteio de Tanque, Atirador, etc)
-        // NOVA LÓGICA: Verifica se a onda atual já atingiu a onda de liberação
-        bool podeSpawnarEspeciais = GameManager.instance.ondaAtual >= ondaParaLiberarEspeciais;
+        if (GameManager.instance.inimigosSpawnadosNestaOnda >= GameManager.instance.inimigosNestaOnda) return;
 
-        if (podeSpawnarEspeciais && listaDeEspeciais.Length > 0 && GameManager.instance.inimigosSpawnadosNestaOnda < GameManager.instance.inimigosNestaOnda)
+        // --- 1. SPAWN DO BOSS ---
+        bool ehOndaDeBoss = (GameManager.instance.ondaAtual % intervaloDeOndasBoss == 0);
+
+        if (ehOndaDeBoss && !bossSpawnadoNestaOnda)
         {
-            timerEspecial += Time.deltaTime;
-            if (timerEspecial >= currentIntervaloEspecial)
+            Spawnar(prefabBoss);
+            GameManager.instance.inimigosSpawnadosNestaOnda++;
+            bossSpawnadoNestaOnda = true;
+        }
+
+        // --- 2. GERAÇÃO DO LOTE (Enxame e Especiais) ---
+        if (!estaSpawnandoLote)
+        {
+            timerBasico += Time.deltaTime;
+            if (timerBasico >= currentIntervaloBasico)
             {
-                SpawnarEspecial();
-                GameManager.instance.inimigosSpawnadosNestaOnda++;
-                timerEspecial = 0f;
+                int faltam = GameManager.instance.inimigosNestaOnda - GameManager.instance.inimigosSpawnadosNestaOnda;
+                int quantidadeParaSpawnar = Mathf.Min(currentLoteBasico, faltam);
+
+                StartCoroutine(SpawnarLote(quantidadeParaSpawnar));
+
+                AtualizarDificuldadeDaOnda();
+                timerBasico = 0f;
             }
         }
     }
 
+    IEnumerator SpawnarLote(int quantidade)
+    {
+        estaSpawnandoLote = true;
+        bool podeSpawnarEspeciais = GameManager.instance.ondaAtual >= ondaParaLiberarEspeciais;
+
+        for (int i = 0; i < quantidade; i++)
+        {
+            if (GameManager.instance.inimigosSpawnadosNestaOnda >= GameManager.instance.inimigosNestaOnda) break;
+
+            bool virouEspecial = podeSpawnarEspeciais && Random.Range(0f, 100f) <= currentChanceEspecial;
+
+            if (virouEspecial && listaDeEspeciais.Length > 0)
+            {
+                SpawnarEspecial();
+            }
+            else
+            {
+                Spawnar(prefabInimigoBasico);
+            }
+
+            GameManager.instance.inimigosSpawnadosNestaOnda++;
+            yield return new WaitForSeconds(atrasoDentroDoLote);
+        }
+
+        estaSpawnandoLote = false;
+    }
+
     void AtualizarDificuldadeDaOnda()
     {
-        float progresso = 0f;
+        float progressoLimitado = 0f;
+        float progressoInfinito = 0f;
 
         if (GameManager.instance != null)
         {
-            progresso = (float)(GameManager.instance.ondaAtual - 1) / (ondaParaDificuldadeMaxima - 1);
-            progresso = Mathf.Clamp01(progresso);
+            progressoInfinito = (float)(GameManager.instance.ondaAtual - 1) / (ondaParaTetoDeVariaveis - 1);
+            progressoLimitado = Mathf.Clamp01(progressoInfinito);
         }
 
-        currentIntervaloBasico = Mathf.Lerp(tempoSpawnBasicoInicial, tempoSpawnBasicoFinal, progresso);
-        currentLoteBasico = Mathf.RoundToInt(Mathf.Lerp(loteBasicoInicial, loteBasicoFinal, progresso));
-        currentIntervaloEspecial = Mathf.Lerp(tempoSpawnEspecialInicial, tempoSpawnEspecialFinal, progresso);
+        currentIntervaloBasico = Mathf.Lerp(tempoSpawnBasicoInicial, tempoSpawnBasicoFinal, progressoLimitado);
+        currentChanceEspecial = Mathf.Lerp(chanceEspecialInicial, chanceEspecialMaxima, progressoLimitado);
+
+        currentLoteBasico = Mathf.RoundToInt(Mathf.LerpUnclamped(loteBasicoInicial, loteBasicoFinal, progressoInfinito));
+        if (currentLoteBasico < 1) currentLoteBasico = 1;
     }
 
     void Spawnar(GameObject prefab)

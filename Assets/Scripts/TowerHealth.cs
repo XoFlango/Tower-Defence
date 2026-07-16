@@ -6,7 +6,7 @@ public class TowerHealth : MonoBehaviour
     [Header("Atributos de Vida")]
     // Agora a vida base é 10!
     public float vidaMaxima = 10f;
-    private float vidaAtual;
+    public float vidaAtual;
 
     [Header("Regeneração")]
     public float regeneracaoPorSegundo = 0f; // Começa em 0. A loja vai aumentar isso.
@@ -78,5 +78,17 @@ public class TowerHealth : MonoBehaviour
         {
             GameManager.instance.AtivarGameOver();
         }
+    }
+
+    public void CurarTorre(float quantidade)
+    {
+        vidaAtual += quantidade;
+
+        if (vidaAtual > vidaMaxima)
+        {
+            vidaAtual = vidaMaxima;
+        }
+
+        AtualizarTextoDeVida();
     }
 }

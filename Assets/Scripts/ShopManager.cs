@@ -1,58 +1,71 @@
 using UnityEngine;
 using TMPro;
 
+[System.Serializable]
+public class BotaoUpgradeUI
+{
+    public TextMeshProUGUI textoDescricao;
+    public TextMeshProUGUI textoValor;
+    public TextMeshProUGUI textoCusto;
+}
+
 public class ShopManager : MonoBehaviour
 {
-    [Header("Referências")]
-    public TowerController torre;
-    public TowerHealth saudeTorre;
+    [Header("Referências da Torre")]
+    public TowerController torreController;
+    public TowerHealth torreHealth;
 
     [Header("Custos Iniciais")]
-    public int custoDano = 5;
-    public int custoVelocidade = 5;
-    public int custoCura = 10;
-    public int custoVidaMaxima = 15;
-    public int custoMultiplicador = 25; // NOVO CUSTO (um pouco mais caro por ser muito forte)
-    public int custoExplosao = 30;
+    public int custoExplosao;
+    public int custoDano;
+    public int custoVelocidade;
+    public int custoVidaMaxima;
+    public int custoRegeneracao;
+    public int custoMultiplicadorMoeda;
 
-    [Header("Matemática da Loja")]
-    public float multiplicadorDeCusto = 1.25f;
+    public float multiplicadorDeCusto = 1.5f;
 
-    [Header("Textos da UI")]
-    public TextMeshProUGUI textoBotaoDano;
-    public TextMeshProUGUI textoBotaoVelocidade;
-    public TextMeshProUGUI textoBotaoCura;
-    public TextMeshProUGUI textoBotaoVidaMaxima;
-    public TextMeshProUGUI textoBotaoMultiplicador; // NOVO TEXTO
-    public TextMeshProUGUI textoBotaoExplosao;
+    [Header("Interface dos Botões")]
+    public BotaoUpgradeUI uiExplosao;
+    public BotaoUpgradeUI uiDano;
+    public BotaoUpgradeUI uiVelocidade;
+    public BotaoUpgradeUI uiVidaMaxima;
+    public BotaoUpgradeUI uiRegeneracao;
+    public BotaoUpgradeUI uiMultiplicadorMoeda;
 
     void Start()
     {
         AtualizarTextosLoja();
     }
 
-    public void ComprarUpgradeDano()
+    // --- FUNÇÕES DE COMPRA ---
+
+    public void ComprarUpgradeExplosao()
     {
-        if (GameManager.instance.GastarMoedas(custoDano))
+        if (GameManager.instance.GastarMoedas(custoExplosao))
         {
-            // O dano pode subir de 1 em 1 (ou fracionado se você mudar na torre depois)
-            torre.danoAtual += 1;
-
-            // Multiplica o custo atual por 1.25 e arredonda para o inteiro mais próximo
-            custoDano = Mathf.RoundToInt(custoDano * multiplicadorDeCusto);
-
+            torreController.raioDeExplosaoAtual += 0.5f;
+            custoExplosao = Mathf.RoundToInt(custoExplosao * multiplicadorDeCusto);
             AtualizarTextosLoja();
         }
     }
 
-    public void ComprarRegeneracao()
+    public void ComprarUpgradeDano()
     {
-        if (GameManager.instance.GastarMoedas(custoCura))
+        if (GameManager.instance.GastarMoedas(custoDano))
         {
-            // Adiciona 0.5 de vida regenerada por segundo a cada compra
-            saudeTorre.AumentarRegeneracao(0.5f);
+            torreController.danoAtual += 1;
+            custoDano = Mathf.RoundToInt(custoDano * multiplicadorDeCusto);
+            AtualizarTextosLoja();
+        }
+    }
 
-            custoCura = Mathf.RoundToInt(custoCura * multiplicadorDeCusto);
+    public void ComprarUpgradeVelocidade()
+    {
+        if (torreController.fireRate > 0.15f && GameManager.instance.GastarMoedas(custoVelocidade))
+        {
+            torreController.fireRate -= 0.05f;
+            custoVelocidade = Mathf.RoundToInt(custoVelocidade * multiplicadorDeCusto);
             AtualizarTextosLoja();
         }
     }
@@ -61,68 +74,78 @@ public class ShopManager : MonoBehaviour
     {
         if (GameManager.instance.GastarMoedas(custoVidaMaxima))
         {
-            // Aumenta o limite máximo em 5.0 pontos
-            saudeTorre.AumentarVidaMaxima(5f);
-
+            torreHealth.AumentarVidaMaxima(5f);
             custoVidaMaxima = Mathf.RoundToInt(custoVidaMaxima * multiplicadorDeCusto);
             AtualizarTextosLoja();
         }
     }
 
-    public void ComprarUpgradeExplosao()
+    public void ComprarRegeneracao()
     {
-        if (GameManager.instance.GastarMoedas(custoExplosao))
+        if (GameManager.instance.GastarMoedas(custoRegeneracao))
         {
-            // Aumenta o raio da explosão em 0.5 unidades da Unity por compra
-            torre.raioDeExplosaoAtual += 0.5f;
-
-            custoExplosao = Mathf.RoundToInt(custoExplosao * multiplicadorDeCusto);
+            torreHealth.AumentarRegeneracao(0.5f);
+            custoRegeneracao = Mathf.RoundToInt(custoRegeneracao * multiplicadorDeCusto);
             AtualizarTextosLoja();
         }
     }
 
-    public void ComprarMultiplicadorDeMoedas()
+    public void ComprarMultiplicadorMoeda()
     {
-        if (GameManager.instance.GastarMoedas(custoMultiplicador))
+        if (GameManager.instance.GastarMoedas(custoMultiplicadorMoeda))
         {
-            // Aumenta o rendimento de moedas em 20% (0.2) a cada compra
             GameManager.instance.multiplicadorDeMoedas += 0.2f;
-
-            custoMultiplicador = Mathf.RoundToInt(custoMultiplicador * multiplicadorDeCusto);
+            custoMultiplicadorMoeda = Mathf.RoundToInt(custoMultiplicadorMoeda * multiplicadorDeCusto);
             AtualizarTextosLoja();
         }
     }
 
+    // --- ATUALIZAÇÃO DOS TEXTOS ---
     void AtualizarTextosLoja()
     {
-        if (textoBotaoDano != null)
-            textoBotaoDano.text = "Mais Dano\n$" + GameManager.instance.FormatarMoedas(custoDano);
-
-        if (textoBotaoVelocidade != null)
-            textoBotaoVelocidade.text = "Tiro Rápido\n$" + GameManager.instance.FormatarMoedas(custoVelocidade);
-
-        if (textoBotaoCura != null)
-            textoBotaoCura.text = "+ Regen Vida\n$" + GameManager.instance.FormatarMoedas(custoCura);
-
-        if (textoBotaoVidaMaxima != null)
-            textoBotaoVidaMaxima.text = "+ Vida Max\n$" + GameManager.instance.FormatarMoedas(custoVidaMaxima);
-
-        // Atualiza o novo texto do multiplicador
-        if (textoBotaoMultiplicador != null)
-            textoBotaoMultiplicador.text = "+ Ouro\n$" + GameManager.instance.FormatarMoedas(custoMultiplicador);
-
-        if(textoBotaoExplosao != null)
-            textoBotaoExplosao.text = "Bala Explosiva\n$" + GameManager.instance.FormatarMoedas(custoExplosao);
-    }
-public void ComprarUpgradeVelocidade()
-    {
-        if (GameManager.instance.GastarMoedas(custoVelocidade))
+        if (uiExplosao.textoDescricao != null)
         {
-            torre.fireRate -= 0.05f;
-            if (torre.fireRate < 0.1f) torre.fireRate = 0.1f;
+            uiExplosao.textoDescricao.text = "Raio Explosão";
+            uiExplosao.textoValor.text = torreController.raioDeExplosaoAtual.ToString("0.0");
+            uiExplosao.textoCusto.text = "$" + GameManager.instance.FormatarMoedas(custoExplosao);
+        }
 
-            custoVelocidade = Mathf.RoundToInt(custoVelocidade * multiplicadorDeCusto);
-            AtualizarTextosLoja();
+        if (uiDano.textoDescricao != null)
+        {
+            uiDano.textoDescricao.text = "Dano";
+            uiDano.textoValor.text = torreController.danoAtual.ToString();
+            uiDano.textoCusto.text = "$" + GameManager.instance.FormatarMoedas(custoDano);
+        }
+
+        if (uiVelocidade.textoDescricao != null)
+        {
+            uiVelocidade.textoDescricao.text = "Velocidade de Tiro";
+            float tirosPorSegundo = 1f / torreController.fireRate;
+            uiVelocidade.textoValor.text = tirosPorSegundo.ToString("0.0") + "/s";
+
+            if (torreController.fireRate <= 0.15f) uiVelocidade.textoCusto.text = "MÁX";
+            else uiVelocidade.textoCusto.text = "$" + GameManager.instance.FormatarMoedas(custoVelocidade);
+        }
+
+        if (uiVidaMaxima.textoDescricao != null)
+        {
+            uiVidaMaxima.textoDescricao.text = "Vida";
+            uiVidaMaxima.textoValor.text = torreHealth.vidaMaxima.ToString("0");
+            uiVidaMaxima.textoCusto.text = "$" + GameManager.instance.FormatarMoedas(custoVidaMaxima);
+        }
+
+        if (uiRegeneracao.textoDescricao != null)
+        {
+            uiRegeneracao.textoDescricao.text = "Regeneração de vida";
+            uiRegeneracao.textoValor.text = torreHealth.regeneracaoPorSegundo.ToString("0.0") + "/s";
+            uiRegeneracao.textoCusto.text = "$" + GameManager.instance.FormatarMoedas(custoRegeneracao);
+        }
+
+        if (uiMultiplicadorMoeda.textoDescricao != null)
+        {
+            uiMultiplicadorMoeda.textoDescricao.text = "Bônus de Moedas";
+            uiMultiplicadorMoeda.textoValor.text = GameManager.instance.multiplicadorDeMoedas.ToString("0.0") + "x";
+            uiMultiplicadorMoeda.textoCusto.text = "$" + GameManager.instance.FormatarMoedas(custoMultiplicadorMoeda);
         }
     }
 }
