@@ -13,7 +13,8 @@ GameObject:
   - component: {fileID: 2579791503357383009}
   - component: {fileID: -6596446733594363674}
   - component: {fileID: -7880754442301258649}
-  - component: {fileID: -7794578232931817163}
+  - component: {fileID: 7547067206777344248}
+  - component: {fileID: 6748083547712630037}
   m_Layer: 6
   m_Name: Boss
   m_TagString: Inimigo
@@ -107,7 +108,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e209c2ef81f54694ea5a754339b01252, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossEscalonamento
-  vidaBase: 500
+  vidaBase: 100
   moedasBase: 100
 --- !u!114 &-6596446733594363674
 MonoBehaviour:
@@ -152,8 +153,8 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!61 &-7794578232931817163
-BoxCollider2D:
+--- !u!70 &7547067206777344248
+CapsuleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -186,15 +187,21 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.045, y: 2.395}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 1.045, y: 2.395}
-  m_EdgeRadius: 0
+  m_Offset: {x: 0.00032019615, y: 0}
+  m_Size: {x: 0.54227686, y: 2.395}
+  m_Direction: 0
+--- !u!114 &6748083547712630037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2508089660376263478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1ec70a86df97a74da8e7cdac2ed754e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Enemy
+  vida: 1
+  valorEmMoedas: 1
+  danoPorSegundo: 10

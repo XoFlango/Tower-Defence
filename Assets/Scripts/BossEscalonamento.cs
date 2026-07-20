@@ -3,8 +3,11 @@ using UnityEngine;
 public class BossEscalonamento : MonoBehaviour
 {
     [Header("Matemática do Boss")]
-    public float vidaBase = 500f;
+    public float vidaBase = 100f;
     public int moedasBase = 100;
+
+    // --- NOVO: Quantos Euros ele dá na onda 10 ---
+    public int metaMoedasBase = 5;
 
     private Enemy scriptInimigo;
     private bool chefeAtivo = false;
@@ -12,6 +15,7 @@ public class BossEscalonamento : MonoBehaviour
     void Start()
     {
         scriptInimigo = GetComponent<Enemy>();
+      
 
         if (scriptInimigo != null && GameManager.instance != null)
         {
@@ -20,16 +24,25 @@ public class BossEscalonamento : MonoBehaviour
 
             scriptInimigo.vida = vidaBase * nivelDoBoss;
             scriptInimigo.valorEmMoedas = moedasBase * nivelDoBoss;
+
+            scriptInimigo.valorEmMetaMoedas = metaMoedasBase * nivelDoBoss;
             scriptInimigo.danoPorSegundo *= nivelDoBoss;
 
             float aumentoDeTamanho = 1f + (nivelDoBoss * 0.1f);
             transform.localScale = new Vector3(aumentoDeTamanho, aumentoDeTamanho, 1f);
 
-            // --- NOVO: Manda a UI ligar a barra do Boss ---
+            // --- TESTE DA BARRA ---
+          
+
             if (BossHealthBar.instance != null)
             {
+               
                 BossHealthBar.instance.MostrarBoss(scriptInimigo.vida, nivelDoBoss);
                 chefeAtivo = true;
+            }
+            else
+            {
+                Debug.LogError("ERRO FATAL: O Boss não achou a interface! A BossHealthBar.instance está NULL.");
             }
         }
     }

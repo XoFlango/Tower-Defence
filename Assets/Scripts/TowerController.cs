@@ -15,26 +15,28 @@ public class TowerController : MonoBehaviour
     public float attackRange = 5f;
     public LayerMask enemyLayer;
 
+    [Header("Configurações da Estação")]
+    public float velocidadeDeRotacao = 30f; // Velocidade do giro (graus por segundo)
+
     private Transform currentTarget;
     private float nextFireTime;
 
     void Update()
     {
+        // NOVO: A estação gira o tempo todo, independente de ter alvos
+        GirarEstacao();
+
         FindTarget();
 
         if (currentTarget != null)
         {
-            AimAtTarget();
+            // Removemos a função de mira que ficava aqui!
 
             if (Time.time >= nextFireTime)
             {
                 Shoot();
 
-                // A MÁGICA AQUI:
-                // Mathf.Max compara o seu fireRate com 0.1f. 
-                // Se o seu fireRate ficar negativo ou virar zero, ele ignora e usa o 0.1f como limite de segurança!
                 float limiteDeSeguranca = Mathf.Max(fireRate, 0.1f);
-
                 nextFireTime = Time.time + limiteDeSeguranca;
             }
         }
@@ -61,26 +63,33 @@ public class TowerController : MonoBehaviour
         currentTarget = nearestEnemy;
     }
 
-    void AimAtTarget()
+    void GirarEstacao()
     {
-        Vector2 lookDir = currentTarget.position - transform.position;
-        float angle = Mathf.Atan2(lookDir.y, lookDir.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0, 0, angle);
+        // Rotate gira o objeto em X, Y e Z. Estamos girando apenas no eixo Z.
+        transform.Rotate(0, 0, velocidadeDeRotacao * Time.deltaTime);
     }
 
     void Shoot()
     {
-        Vector3 spawnPosition = transform.position + (transform.right * fireRadius);
+        // 1. Calcula a direção exata da estação até o inimigo
+        Vector2 direcaoAoAlvo = currentTarget.position - transform.position;
 
-        // Armazena o tiro criado em uma variável temporária
-        GameObject projetilCriado = Instantiate(projectilePrefab, spawnPosition, transform.rotation);
+        // 2. Calcula o ângulo para a bala nascer apontada para o inimigo
+        float angle = Mathf.Atan2(direcaoAoAlvo.y, direcaoAoAlvo.x) * Mathf.Rad2Deg;
+        Quaternion rotacaoDaBala = Quaternion.Euler(0, 0, angle);
 
-        // Acessa o script de física da bala
+        // 3. Define onde a bala vai nascer. 
+        // Em vez de usar a rotação da estação (transform.right), usamos a direção do inimigo!
+        Vector3 direcaoNormalizada = direcaoAoAlvo.normalized;
+        Vector3 spawnPosition = transform.position + (direcaoNormalizada * fireRadius);
+
+        // Cria a bala usando a posição e a rotação que acabamos de calcular
+        GameObject projetilCriado = Instantiate(projectilePrefab, spawnPosition, rotacaoDaBala);
+
         ProjectilePhysics scriptBala = projetilCriado.GetComponent<ProjectilePhysics>();
 
         if (scriptBala != null)
         {
-            // Injeta o dano e o raio de explosão atuais da torre no tiro
             scriptBala.Configurar(danoAtual, raioDeExplosaoAtual);
         }
     }

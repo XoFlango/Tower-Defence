@@ -109,6 +109,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   vida: 1
   valorEmMoedas: 2
+  efeitoMortePrefab: {fileID: 193056104314534891, guid: bc175084d65b7cf49b360cbe653c217e, type: 3}
   danoPorSegundo: 1
 --- !u!114 &-2779176265629334632
 MonoBehaviour:
