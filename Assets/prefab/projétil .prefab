@@ -172,5 +172,9 @@ MonoBehaviour:
   launchForce: 10
   dano: 1
   raioDeExplosao: 0
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 64
   prefabExplosao: {fileID: 193056104314534891, guid: bc175084d65b7cf49b360cbe653c217e, type: 3}
+  multiplicadorTamanhoExplosao: 2
   lifeTime: 3

@@ -31,6 +31,10 @@ public class GameManager : MonoBehaviour
     [Header("Telas")]
     public GameObject painelGameOver;
 
+    [Header("Meta Progressão")]
+    public int metaMoedas = 0; // Quantidade atual de €
+    public TextMeshProUGUI textoMetaMoedas; // O texto na tela
+
     void Awake()
     {
         if (instance == null) instance = this;
@@ -63,6 +67,20 @@ public class GameManager : MonoBehaviour
             return true;
         }
         return false;
+    }
+
+    public void AdicionarMetaMoedas(int quantidade)
+    {
+        metaMoedas += quantidade;
+        AtualizarUITextoMetaMoedas();
+    }
+
+    private void AtualizarUITextoMetaMoedas()
+    {
+        if (textoMetaMoedas != null)
+        {
+            textoMetaMoedas.text = "€ " + metaMoedas;
+        }
     }
 
     // --- NOVO SISTEMA DE ONDAS ---
@@ -98,7 +116,7 @@ public class GameManager : MonoBehaviour
         ondaAtual++;
         inimigosMortosNaOnda = 0;
         inimigosSpawnadosNestaOnda = 0; // Zera para o Spawner começar de novo
-
+        AdicionarMetaMoedas(ondaAtual);
         // Ex: Onda 1 era 15. Onda 2 será 15 * 1.25 = 19 inimigos.
         inimigosNestaOnda = Mathf.RoundToInt(inimigosNestaOnda * multiplicadorDeInimigos);
 

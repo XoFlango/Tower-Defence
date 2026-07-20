@@ -4,6 +4,8 @@ using TMPro;
 
 public class BossHealthBar : MonoBehaviour
 {
+
+
     public static BossHealthBar instance;
 
     public Slider sliderVida;
@@ -16,7 +18,7 @@ public class BossHealthBar : MonoBehaviour
     // NOVO: Guarda o valor máximo em segredo para usar na atualização do texto
     private float vidaMaximaInterna;
 
-    void Awake()
+    /*void Awake()
     {
         instance = this;
         painelInteiro.SetActive(false);
@@ -37,6 +39,29 @@ public class BossHealthBar : MonoBehaviour
         }
 
         // Já atualiza os números assim que o Boss nasce
+        AtualizarTextoNumerico(vidaMaxima);
+    }*/
+    void Awake()
+    {
+        instance = this;
+       
+        painelInteiro.SetActive(false);
+    }
+
+    public void MostrarBoss(float vidaMaxima, int nivel)
+    {
+        
+        painelInteiro.SetActive(true);
+        sliderVida.maxValue = vidaMaxima;
+        sliderVida.value = vidaMaxima;
+
+        vidaMaximaInterna = vidaMaxima;
+
+        if (textoNomeBoss != null)
+        {
+            textoNomeBoss.text = "CHEFÃO - Nv " + nivel;
+        }
+
         AtualizarTextoNumerico(vidaMaxima);
     }
 
@@ -66,4 +91,8 @@ public class BossHealthBar : MonoBehaviour
     {
         painelInteiro.SetActive(false);
     }
+
+
+
+
 }
