@@ -6,6 +6,8 @@ public class ControleAudio : MonoBehaviour
     public Slider sliderVolume;
     public Text textoStatusMudo;
     public GameObject painelConfig;
+
+    public GameObject PanelInicial;
     private bool estaMudo = false;
 
     void Start()
@@ -26,12 +28,15 @@ public class ControleAudio : MonoBehaviour
     public void AbrirConfiguracoes()
     {
         painelConfig.SetActive(true);
+        PanelInicial.SetActive(false);
     }
 
     // Chamado pelo botão de fechar dentro do painel
     public void FecharConfiguracoes()
     {
         painelConfig.SetActive(false);
+        PanelInicial.SetActive(true);
+
     }
 
     // Chamado pelo botão Mutar/Desmutar
